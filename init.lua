@@ -203,6 +203,7 @@ local function computer_receive(pos, fields, player)
 	elseif fields.save then
 		local a = basic:new()
 		a:from_table(minetest.deserialize(meta:get_string("state")))
+		a.program = {}
 		a.cli.str2prg(a, fields.edit)
 		meta:set_string("state", minetest.serialize(a:to_table()))
 		update_formspec(meta)

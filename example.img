@@ -1,0 +1,3 @@
+return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["hello"] = "10 PRINT \"HELLO\"\
+20 GOTO 10\
+"}, ["readonly"] = true}

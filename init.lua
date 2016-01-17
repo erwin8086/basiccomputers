@@ -2,6 +2,51 @@ local path = minetest.get_modpath("basiccomputers")
 local basic = assert(loadfile(path.."/luabasic/sandbox.lua"))(path.."/luabasic")
 local vfs = assert(loadfile(path.."/vfs.lua"))()
 
+basiccomputers = {}
+basiccomputers.basic = basic
+basiccomputers.vfs = vfs
+basiccomputers.path = path
+basiccomputers.running = {}
+
+function basiccomputers.can_dig(pos, player)
+	return true
+end
+
+function basiccomputers.can_inv(pos, player)
+	return true
+end
+
+function basiccomputers.can_click(pos, player)
+	return true
+end
+
+function basiccomputers.can_enter(pos, player)
+	return true
+end
+
+dofile(path.."/upgrades.lua")
+dofile(path.."/chat.lua")
+dofile(path.."/owner.lua")
+dofile(path.."/command.lua")
+dofile(path.."/loader.lua")
+local id = 0
+local function set_running(pos)
+	for id, spos in pairs(basiccomputers.running) do
+		if pos.x == spos.x and pos.y == spos.y and pos.z == spos.z then
+			return
+		end
+	end
+	basiccomputers.running[id] = {x=pos.x, y=pos.y, z=pos.z}
+	id = id + 1
+end
+
+local function set_stop(pos)
+	for id, spos in pairs(basiccomputers.running) do
+		if pos.x == spos.x and pos.y == spos.y and pos.z == spos.z then
+			basiccomputers.running[id] = nil
+		end
+	end
+end
 local off_formspec = "size[10,9]"..
 	"button[7,2;3,3;start;Start]"..
 	"list[current_player;main;0,5;8,4]"..
@@ -20,104 +65,33 @@ local function punch_computer(pos, player)
 
 end
 
-local function is_upgrade(upgrade)
-	if upgrade:get_name() == "basiccomputers:generator" then
-		return true
-	elseif upgrade:get_name() == "basiccomputers:tape_drive" then
-		return true
-	elseif upgrade:get_name() == "basiccomputers:floppy_drive" then
-		return true
-	else
-		return false
-	end
-end
-
-local function has_upgrade(meta, upgrade)
+local function computer_dig(pos, player)
+	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
-	if inv:contains_item("upgrades", upgrade) then
-		return true
-	else
-		return false
+	if inv:is_empty("upgrades") then
+		return basiccomputers.can_dig(pos, player)
 	end
+	return false
 end
 
-local function is_tape(meta)
-	return has_upgrade(meta, ItemStack("basiccomputers:tape_drive"))
-end
 
-local function is_floppy(meta)
-	return has_upgrade(meta, ItemStack("basiccomputers:floppy_drive"))
-end
 
 local function get_on_formspec(meta)
 	local formspec = on_formspec
-	if has_upgrade(meta, ItemStack("basiccomputers:generator")) then
-		formspec = formspec..
-			"label[8,6;Fuel:]"..
-			"list[context;fuel;9,6;1,1]"
-	end
-	if is_tape(meta) then
-		formspec = formspec..
-			"label[8,7;Tape:]"..
-			"list[context;tape;9,7;1,1]"
-	end
-	if is_floppy(meta) then
-		formspec = formspec..
-			"label[8,8;Floppy:]"..
-			"list[context;disk;9,8;1,1]"
-	end
+	formspec = basiccomputers.get_upgrade_inv(meta, formspec)
 	return formspec
 end
 
 local function get_off_formspec(meta)
 	local formspec = off_formspec
-	if has_upgrade(meta, ItemStack("basiccomputers:generator")) then
-		formspec = formspec..
-			"label[8,6;Fuel:]"..
-			"list[context;fuel;9,6;1,1]"
-	end
-	if is_tape(meta) then
-		formspec = formspec..
-			"label[8,7;Tape:]"..
-			"list[context;tape;9,7;1,1]"
-	end
-	if is_floppy(meta) then
-		formspec = formspec..
-			"label[8,8;Floppy:]"..
-			"list[context;disk;9,8;1,1]"
-	end
+	formspec = basiccomputers.get_upgrade_inv(meta, formspec)
 	return formspec
 end
 
-local function upgrade_put(pos, stack, player)
-	if is_upgrade(stack) then
-		return stack:get_count()
-	end
-	return 0
-end
-local function upgrade_take(pos, stack, player)
-	local meta = minetest.get_meta(pos)
-	local inv = meta:get_inventory()
-	if stack:get_name() == "basiccomputers:generator" then
-		if inv:is_empty("fuel") then
-			return stack:get_count()
-		else
-			return 0
-		end
-	elseif stack:get_name() == "basiccomputers:tape_drive" then
-		if inv:is_empty("tape") then
-			return stack:get_count()
-		else
-			return 0
-		end
-	else
-		return stack:get_count()
-	end
-		
-end
 
-local function get_power(meta, power)
-	if has_upgrade(meta, ItemStack("basiccomputers:generator")) then
+
+function basiccomputers.get_power(meta, power)
+	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
 		local energy = meta:get_int("energy")
 		if energy >= power then
 			meta:set_int("energy", energy-power)			
@@ -149,7 +123,7 @@ local function start_computer(pos, player)
 	if meta:get_int("running") == 1 then
 		return
 	end
-	if not get_power(meta, 500) then
+	if not basiccomputers.get_power(meta, 500) then
 		return
 	end
 	meta:set_int("running", 1)
@@ -168,6 +142,11 @@ local function stop_computer(pos, player)
 	meta:set_string("formspec", get_off_formspec(meta))
 	meta:set_string("infotext", "Computer: Poweroff")
 	meta:set_string("state", "{}")
+	local inv = meta:get_inventory()
+	local stack = inv:get_stack("disk", 1)
+	stack = basiccomputers.disk_remove(stack)
+	inv:set_stack("disk", 1, stack)
+	set_stop(pos)
 	minetest.swap_node(pos, {name="basiccomputers:computer"})
 end
 
@@ -181,10 +160,32 @@ local function reboot_computer(pos, player)
 	local meta = minetest.get_meta(pos)
 	meta:set_string("state", "{}")
 	meta:set_string("display", "")
+	local inv = meta:get_inventory()
+	local stack = inv:get_stack("disk", 1)
+	stack = basiccomputers.disk_remove(stack)
+	inv:set_stack("disk", 1, stack)
 	update_formspec(meta)
 end
 
+local can_dig = function(pos, player)
+	local meta = minetest.get_meta(pos)
+	local inv = meta:get_inventory()
+	if not inv:is_empty("upgrade") then
+		return false
+	end
+	return basiccomputers.can_dig(pos, player)
+end
+
 local function computer_receive(pos, fields, player)
+	if not basiccomputers.can_click(pos, player) then
+		fields.halt=nil
+		fields.kill=nil
+		fields.reboot=nil
+		fields.save=nil
+	end
+	if not basiccomputers.can_enter(pos, player) then
+		fields.ok=nil
+	end
 	local meta = minetest.get_meta(pos)
 	if fields.halt then
 		stop_computer(pos, player)
@@ -226,10 +227,11 @@ local function computer_calc(pos)
 	if meta:get_int("running") == 0 then
 		return
 	end
-	if not get_power(meta, 100) then
+	if not basiccomputers.get_power(meta, 100) then
 		stop_computer(pos)
 		return
 	end
+	set_running(pos)
 	local state = minetest.deserialize(meta:get_string("state"))
 	local a = basic:new()
 	a:from_table(state)
@@ -276,135 +278,6 @@ local function computer_calc(pos)
 	meta:set_string("state", minetest.serialize(a:to_table()))
 end
 
-basic.cmds.SAVE = function(self, args)
-	local meta = minetest.get_meta(self.pos)
-	if is_tape(meta) then
-		local inv = meta:get_inventory()
-		stack = inv:get_stack("tape",1)
-		if stack:get_name() == "basiccomputers:tape" then
-			local prg = self.cli.prg2str(self)
-			stack:set_metadata(prg)
-			inv:set_stack("tape",1,stack)
-		end
-	end
-end
-
-basic.cmds.LOAD = function(self, args)
-	local meta = minetest.get_meta(self.pos)
-	if is_tape(meta) then
-		local inv = meta:get_inventory()
-		local stack = inv:get_stack("tape",1)
-		if stack:get_name() == "basiccomputers:tape" then
-			local prg = stack:get_metadata()
-			if prg then
-				self.cli.str2prg(self, prg)
-			end
-		end
-	end
-end
-
-local function load_vfs(stack)
-	local v = vfs:new()
-	local saved = minetest.deserialize(stack:get_metadata())
-	v:from_table(saved)
-	v:set_size(4096)
-	return v
-end
-
-local function save_vfs(stack, v)
-	local save = v:to_table()
-	stack:set_metadata(minetest.serialize(save))
-	print(minetest.serialize(save))
-	return stack
-end
-
-basic.cmds.FOPEN = function(self, args)
-	local id = args[1]
-	local name = args[2]
-	if id and name and type(id) == "number" and type(name) == "string" then
-		if id < 10 and id >= 0 then
-			local meta = minetest.get_meta(self.pos)
-			if is_floppy(meta) then
-				local inv = meta:get_inventory()
-				local stack = inv:get_stack("disk", 1)
-				if stack:get_name() == "basiccomputers:floppy" then
-					local vfs = load_vfs(stack)
-					vfs:open(name, id)
-					stack = save_vfs(stack, vfs)
-					inv:set_stack("disk", 1, stack)
-				else
-					self:error("No Floppy")
-
-				end
-			else
-				self:error("No Floppydrive")
-			end
-		else
-			self:error("id must between 0 and 9")
-		end
-	else
-		self:error("Inkorrect parameter")
-	end
-end
-
-basic.cmds.FWRITE = function(self, args)
-	local id = args[1]
-	local text = args[2]
-	if id and text and type(id) == "number" and type(text) == "string" then
-		if id < 10 and id >= 0 then
-			local meta = minetest.get_meta(self.pos)
-			if is_floppy(meta) then
-				local inv = meta:get_inventory()
-				local stack = inv:get_stack("disk", 1)
-				if stack:get_name() == "basiccomputers:floppy" then
-					local vfs = load_vfs(stack)
-					vfs:write(id,text)
-					stack = save_vfs(stack, vfs)
-					inv:set_stack("disk", 1, stack)
-				else
-					self:error("No Floppy")
-				end
-			else
-				self:error("No Floppydrive")
-			end
-		else
-			self:error("Id must between 0 and 9")
-		end
-	else
-		self:error("Inkorrect Parameter")
-	end
-end
-
-basic.funcs.FREAD = function(self, args)
-	local id = args[1]
-	if id and type(id) == "number" then
-		if id < 10 and id >= 0 then
-			local meta = minetest.get_meta(self.pos)
-			if is_floppy(meta) then
-				local inv = meta:get_inventory()
-				local stack = inv:get_stack("disk", 1)
-				if stack:get_name() == "basiccomputers:floppy" then
-					local vfs = load_vfs(stack)
-					local read = vfs:read(id)
-					stack = save_vfs(stack, vfs)
-					inv:set_stack("disk",1,stack)
-					return 0, read
-				else
-					self:error("No Floppy")
-				end
-			else
-				self:error("No Floppydrive")
-			end
-		else
-			self:error("Id must between 0 and 9")
-		end
-	else
-		self:error("Inkorrect Parameter")
-	end
-	return 0
-end
-
-
 minetest.register_node("basiccomputers:computer", {
 	description = "Computer",
 	tiles = { "default_wood.png" },
@@ -422,22 +295,33 @@ minetest.register_node("basiccomputers:computer", {
 		inv:set_size("disk", 1)
 	end,
 	on_punch = function(pos, node, player, pointed_thing)
-		start_computer(pos, player)
+		if basiccomputers.can_click(pos, player) then
+			start_computer(pos, player)
+		end
 	end,
 	on_receive_fields = function(pos, formname, fields, sender)
+		if not basiccomputers.can_click(pos, sender) then
+			return
+		end
 		if fields.start then
 			start_computer(pos, sender)
 		end
 	end,
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+		if not basiccomputers.can_inv(pos, player) then
+			return 0
+		end
 		if listname == "upgrades" then
-			return upgrade_put(pos, stack, player)
+			return basiccomputers.upgrade_put(pos, stack, player)
 		end
 		return stack:get_count()
 	end,
 	allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+		if not basiccomputers.can_inv(pos, player) then
+			return 0
+		end
 		if listname == "upgrades" then
-			return upgrade_take(pos, stack, player)
+			return basiccomputers.upgrade_take(pos, stack, player)
 		end
 		return stack:get_count()
 	end,
@@ -452,6 +336,7 @@ minetest.register_node("basiccomputers:computer", {
 		local meta = minetest.get_meta(pos)
 		meta:set_string("formspec", get_off_formspec(meta))
 	end,
+	can_dig = computer_dig
 })
 
 minetest.register_node("basiccomputers:computer_running", {
@@ -466,6 +351,9 @@ minetest.register_node("basiccomputers:computer_running", {
 		computer_receive(pos,fields,sender)
 	end,
 	allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+		if not basiccomputers.can_inv(pos, player) then
+			return 0
+		end
 		if listname == "upgrades" then
 			minetest.chat_send_player(player:get_player_name(), "You cannot add upgrade while computer is running!")
 			return 0
@@ -473,6 +361,9 @@ minetest.register_node("basiccomputers:computer_running", {
 		return stack:get_count()
 	end,
 	allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+		if not basiccomputers.can_inv(pos, player) then
+			return 0
+		end
 		if listname == "upgrades" then
 			minetest.chat_send_player(player:get_player_name(), "You cannot remove upgrade while computer is running!")
 			return 0
@@ -481,7 +372,16 @@ minetest.register_node("basiccomputers:computer_running", {
 	end,
 	allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
 		return 0
-	end
+	end,
+	on_metadata_inventory_take = function(pos, listname, index, stack, player)
+		if listname == "disk" then
+			stack = basiccomputers.disk_remove(stack)
+			return stack
+		end
+	end,
+	can_dig = function(pos, player)
+		return false
+	end,
 })
 
 minetest.register_abm({
@@ -517,4 +417,5 @@ minetest.register_craftitem("basiccomputers:floppy_drive", {
 minetest.register_craftitem("basiccomputers:floppy", {
 	description = "Floppy",
 	inventory_image = "default_stone.png",
+	stack_max = 1,
 })

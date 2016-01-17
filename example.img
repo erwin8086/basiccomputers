@@ -1,3 +1,11 @@
-return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["hello"] = "10 PRINT \"HELLO\"\
+return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["fstat"] = "10 PRINT \"STATS\"\
+20 PRINT \"SIZE:\", FSTAT(\"size\"), \" FREE:\", FSTAT(\"free\"), \" USED:\", FSTAT(\"used\")\
+30 PRINT \"READONLY:\", FSTAT(\"readonly\"), \" NOWRITE:\", FSTAT(\"nowrite\")\
+31 LET \"A\", 0\
+32 LET \"A\", A+1\
+33 IF A, \"<\", 2, 32\
+40 CLEAR\
+50 GOTO 10\
+", ["hello"] = "10 PRINT \"HELLO\"\
 20 GOTO 10\
 "}, ["readonly"] = true}

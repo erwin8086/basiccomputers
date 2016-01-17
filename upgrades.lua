@@ -107,6 +107,7 @@ basic.cmds.LOAD = function(self, args)
 		if stack:get_name() == "basiccomputers:tape" then
 			local prg = stack:get_metadata()
 			if prg then
+				self.program = {}
 				self.cli.str2prg(self, prg)
 			end
 		else
@@ -346,6 +347,44 @@ basic.cmds.FPRINT = function(self, args)
 	end
 end
 
+function basic.funcs.FSTAT(self, args)
+	local mode = args[1]
+	if (not mode) or (not type(mode) == "string") then
+		self:error("No Mode, modes:free, used, size, readonly, nowrite")
+		return 0
+	end
+	local meta = minetest.get_meta(self.pos)
+	if basiccomputers.is_floppy(meta) then
+		local inv = meta:get_inventory()
+		local stack = inv:get_stack("disk", 1)
+		if stack:get_name() == "basiccomputers:floppy" then
+			local vfs = load_vfs(stack)
+			if mode == "free" then
+				return vfs.size-vfs:get_size()
+			elseif mode == "used" then
+				return vfs:get_size()
+			elseif mode == "size" then
+				return vfs.size
+			elseif mode == "readonly" then
+				if vfs.readonly then
+					return 1
+				end
+			elseif mode == "nowrite" then
+				if vfs.nowrite then
+					return 1
+				end
+			else
+				self:error("Unkown Mode")
+			end
+		else
+			self:error("No Floppy")
+		end
+	else
+		self:error("No Floppydrive")
+	end
+	return 0
+end
+
 minetest.register_craft({
 	recipe = {{"basiccomputers:floppy"}},
 	output = "basiccomputers:floppy",
@@ -422,6 +461,7 @@ basic.cmds.FLOAD = function(self, args)
 			local stack = inv:get_stack("disk", 1)
 			if stack:get_name() == "basiccomputers:floppy" then
 				local vfs = load_vfs(stack)
+				self.program = {}
 				self.cli.str2prg(self, vfs:load(f))
 			else
 				self:error("No Floppy")

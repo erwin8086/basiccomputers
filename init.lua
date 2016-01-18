@@ -446,3 +446,5 @@ minetest.register_craftitem("basiccomputers:floppy", {
 	inventory_image = "default_stone.png",
 	stack_max = 1,
 })
+
+minetest.register_privilege("basiccomputers_admin", "Admin for basiccomputers")

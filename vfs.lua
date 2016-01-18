@@ -163,7 +163,7 @@ function vfs:format()
 end
 
 function vfs:save(f, str)
-	if not self.readonly then
+	if not self.readonly and self:is_space(string.len(str)-string.len(self.fs[f] or "")) then
 		self.fs[f] = str
 	end
 end

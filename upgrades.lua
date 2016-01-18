@@ -125,6 +125,7 @@ local function load_vfs(stack)
 	v:set_size(4096)
 	return v
 end
+basiccomputers.load_vfs=load_vfs
 
 local function save_vfs(stack, v)
 	local save = v:to_table()
@@ -132,6 +133,7 @@ local function save_vfs(stack, v)
 	print(minetest.serialize(save))
 	return stack
 end
+basiccomputers.save_vfs=save_vfs
 
 function basiccomputers.disk_remove(stack)
 	if stack:get_name() == "basiccomputers:floppy" then

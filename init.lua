@@ -29,6 +29,7 @@ dofile(path.."/chat.lua")
 dofile(path.."/owner.lua")
 dofile(path.."/command.lua")
 dofile(path.."/loader.lua")
+dofile(path.."/disk_block.lua")
 local id = 0
 local function set_running(pos)
 	for id, spos in pairs(basiccomputers.running) do
@@ -116,6 +117,31 @@ basic.funcs.ENERGY = function(self, arg)
 	local meta = minetest.get_meta(self.pos)
 	local energy = meta:get_int("energy")
 	return energy or 0
+end
+
+basic.funcs.ISREAD = function(self, args)
+	local meta = minetest.get_meta(self.pos)
+	local read = meta:get_string("input")
+	if read and read ~= "" then
+		return 1
+	else
+		return 0
+	end
+end
+
+basic.funcs.READ = function(self, args)
+	return self:read()
+end
+
+basic.cmds.STR = function(self, args)
+	local str = args[1]
+	if str then
+		self.mem.str = str
+	end
+end
+
+basic.funcs.STR = function(self, args)
+	return 0, self.mem.str or ""
 end
 
 local function start_computer(pos, player)

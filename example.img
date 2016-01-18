@@ -1,4 +1,20 @@
-return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["fstat"] = "10 PRINT \"STATS\"\
+return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["energy"] = "10 PRINT \"ENERGY:\", ENERGY()\
+", ["loops"] = "5 PRINT  \"START\"\
+10 LET \"A\", 0\
+20 DO\
+30 LET \"A\", A+1\
+40 PRINT \"A=\", A\
+50 WHILE TEST(A,\"<\", 3)\
+60 FOR \"A\", 1, 5\
+70 PRINT \"A=\", A\
+75 NEXT\
+77 LET \"A\", 4\
+80 DO:LET \"A\", A+1:PRINT \"A=\",A:WHILE TEST(A,\"<\", 7)\
+90 FOR \"B\", 0,2:PRINT \"B=\", B:NEXT\
+100 LET \"B\", 0\
+110 FOR \"A\",1,8:LET \"B\", B+1:PRINT A, \"*\",B,\"=\",A*B:NEXT\
+120 PRINT \"END\":END\
+", ["fstat"] = "10 PRINT \"STATS\"\
 20 PRINT \"SIZE:\", FSTAT(\"size\"), \" FREE:\", FSTAT(\"free\"), \" USED:\", FSTAT(\"used\")\
 30 PRINT \"READONLY:\", FSTAT(\"readonly\"), \" NOWRITE:\", FSTAT(\"nowrite\")\
 31 LET \"A\", 0\
@@ -6,6 +22,19 @@ return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["fstat"]
 33 IF A, \"<\", 2, 32\
 40 CLEAR\
 50 GOTO 10\
+", ["str"] = "10 STR \"HELLO\"\
+20 PRINT STR()", ["read"] = "10 IF ISREAD(), \"<>\", 1, 10\
+20 STR READ()\
+30 PRINT STR()\
+40 CHAT STR()\
+50 GOTO 10\
 ", ["hello"] = "10 PRINT \"HELLO\"\
 20 GOTO 10\
+", ["let"] = "8 PRINT \"ENTER NUMBER1:\"\
+9 IF ISREAD(),\"<>\", 1,9\
+10 LET \"A\", TONUMBER(READ())\
+18 PRINT \"ENTER NUMBER2:\"\
+19 IF ISREAD(), \"<>\",1,19\
+20 LET \"B\", TONUMBER(READ())\
+30 PRINT \"NUMBER1 + NUMBER2=\", A+B\
 "}, ["readonly"] = true}

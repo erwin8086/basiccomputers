@@ -34,6 +34,10 @@ dofile(path.."/disk_block.lua")
 if technic then
 	dofile(path.."/technic.lua")
 end
+if digiline then
+	dofile(path.."/digiline.lua")
+end
+	
 local id = 0
 local function set_running(pos)
 	for id, spos in pairs(basiccomputers.running) do
@@ -394,6 +398,7 @@ minetest.register_node("basiccomputers:computer", {
 		local meta = minetest.get_meta(pos)
 		meta:set_string("formspec", get_off_formspec(meta))
 	end,
+	digiline = basiccomputers.digiline,
 	can_dig = computer_dig
 })
 
@@ -437,6 +442,7 @@ minetest.register_node("basiccomputers:computer_running", {
 			return stack
 		end
 	end,
+	digiline = basiccomputers.digiline,
 	can_dig = function(pos, player)
 		return false
 	end,

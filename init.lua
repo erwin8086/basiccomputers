@@ -37,7 +37,7 @@ end
 if digiline then
 	dofile(path.."/digiline.lua")
 end
-	
+dofile(path.."/book.lua")	
 local id = 0
 local function set_running(pos)
 	for id, spos in pairs(basiccomputers.running) do

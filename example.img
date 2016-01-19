@@ -74,4 +74,18 @@ return {["opens"] = {{["fname"] = "tmp", ["pos"] = 6}, {["pos"] = 5, ["fname"] =
 140 RM \"tmp\"\
 150 RM \"tmp3\"\
 160 PRINT \"END\":END\
+", ["power"] = "10 PRINT \"Use WAIT to save power\"\
+20 PRINT \"Uses 85eu/t, default: 100eu/t\"\
+30 PRINT \"Need no Power Upgrade!\"\
+40 WAIT 10\
+50 PRINT\
+60 PRINT \"Use SLEEP to save more power\"\
+70 PRINT \"Uses 40eu/t, need Power Upgrade\"\
+80 SLEEP 10\
+90 PRINT\
+100 PRINT \"Use STANDBY to save max power\"\
+110 PRINT \"Uses 7eu/t, need Power Upgrade\"\
+120 PRINT \"Time is in minutes\"\
+130 STANDBY 1\
+140 PRINT \"END\":END\
 "}, ["readonly"] = true}

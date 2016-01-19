@@ -24,12 +24,16 @@ function basiccomputers.can_enter(pos, player)
 	return true
 end
 
+
 dofile(path.."/upgrades.lua")
 dofile(path.."/chat.lua")
 dofile(path.."/owner.lua")
 dofile(path.."/command.lua")
 dofile(path.."/loader.lua")
 dofile(path.."/disk_block.lua")
+if technic then
+	dofile(path.."/technic.lua")
+end
 local id = 0
 local function set_running(pos)
 	for id, spos in pairs(basiccomputers.running) do
@@ -90,35 +94,6 @@ local function get_off_formspec(meta)
 end
 
 
-
-function basiccomputers.get_power(meta, power)
-	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
-		local energy = meta:get_int("energy")
-		if energy >= power then
-			meta:set_int("energy", energy-power)			
-			return true
-		else
-			local inv = meta:get_inventory()
-			local fuel, afterfuel = minetest.get_craft_result({ method="fuel", with=1, items=inv:get_list("fuel")})
-			if fuel.time > 0 then
-				meta:set_int("energy", fuel.time*200-energy)
-				local stack = inv:get_stack("fuel", 1)
-				stack:take_item()
-				inv:set_stack("fuel",1, stack)
-				return true
-			end
-		end
-	end
-	return false
-		
-end
-
-basic.funcs.ENERGY = function(self, arg)
-	local meta = minetest.get_meta(self.pos)
-	local energy = meta:get_int("energy")
-	return energy or 0
-end
-
 basic.funcs.ISREAD = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	local read = meta:get_string("input")
@@ -144,12 +119,24 @@ basic.funcs.STR = function(self, args)
 	return 0, self.mem.str or ""
 end
 
-local function start_computer(pos, player)
+local function start_computer(pos, player, start)
+	if basiccomputers.on_start then
+		local exit = basiccomputers.on_start(pos, player, start)
+		if exit then
+			return
+		end
+	end
 	local meta = minetest.get_meta(pos)
 	if meta:get_int("running") == 1 then
 		return
 	end
 	if not basiccomputers.get_power(meta, 500) then
+		start = start or 0
+		if start < 2 then
+			minetest.after(2.0, function()
+				start_computer(pos, player, start+1)
+			end)
+		end
 		return
 	end
 	meta:set_int("running", 1)
@@ -158,8 +145,16 @@ local function start_computer(pos, player)
 	meta:set_string("display", "")
 	minetest.swap_node(pos, {name="basiccomputers:computer_running"})
 end
+basiccomputers.start_computer = start_computer
 
 local function stop_computer(pos, player)
+	if basiccomputers.on_stop then
+		local exit = basiccomputers.on_stop(pos, player)
+		if exit then
+			return
+		end
+	end
+		
 	local meta = minetest.get_meta(pos)
 	if meta:get_int("running") == 0 then
 		return
@@ -175,6 +170,7 @@ local function stop_computer(pos, player)
 	set_stop(pos)
 	minetest.swap_node(pos, {name="basiccomputers:computer"})
 end
+basiccomputers.stop_computer = stop_computer
 
 local function update_formspec(meta)
 	meta:set_string("formspec", get_on_formspec(meta)..
@@ -250,6 +246,12 @@ basic.cmds.EDIT = computer_edit
 
 
 local function computer_calc(pos)
+	if basiccomputers.on_calc then
+		local exit = basiccomputers.on_calc(pos)
+		if exit then
+			return
+		end
+	end
 	local meta = minetest.get_meta(pos)
 	if meta:get_int("running") == 0 then
 		return
@@ -397,7 +399,7 @@ minetest.register_node("basiccomputers:computer", {
 
 minetest.register_node("basiccomputers:computer_running", {
 	tiles = { "default_wood.png" },
-	groups={choppy=2},
+	groups = {choppy=2},
 	drop="basiccomputers:computer",
 	on_punch = function(pos, node, player, pointed_thing)
 		punch_computer(pos, player)

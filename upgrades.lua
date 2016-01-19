@@ -1,3 +1,122 @@
+basic.funcs.ENERGY = function(self, arg)
+	local meta = minetest.get_meta(self.pos)
+	local energy = meta:get_int("energy")
+	return energy or 0
+end
+
+function basiccomputers.is_power(meta)
+	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:power"))
+end
+
+basic.cmds.WAIT = function(self, arg)
+	local meta = minetest.get_meta(self.pos)
+	local time = arg[1]
+	if time and type(time)=="number" then
+		meta:set_int("wait", time)
+	end
+end
+basic.cmds.SLEEP = function(self, arg)
+	local meta = minetest.get_meta(self.pos)
+	if basiccomputers.is_power(meta) then
+		local time = arg[1]
+		if time and type(time)=="number" then
+			meta:set_int("sleep", time)
+		end
+	else
+		self:error("Requires Power Upgrade")
+	end
+end
+basic.cmds.STANDBY = function(self, arg)
+	local meta = minetest.get_meta(self.pos)
+	if basiccomputers.is_power(meta) then
+		local time = arg[1]
+		if time and type(time)=="number" then
+			meta:set_int("standby", time*60)
+		end
+	else
+		self:error("Requires Power Upgrade")
+	end
+end
+
+local function no_power(pos)
+	meta:set_int("wait", 0)
+	meta:set_int("sleep", 0)
+	meta:set_int("standby", 0)
+	basiccomputers.stop_computer(pos)
+end
+
+local old_on_calc = basiccomputers.on_calc
+function basiccomputers.on_calc(pos)
+	local meta = minetest.get_meta(pos)
+	local wait = meta:get_int("wait") or 0
+	if wait > 0 then
+		if not basiccomputers.get_power(meta, 85) then
+			no_power(pos)
+			return true
+		end
+		meta:set_int("wait", wait-1)
+		return true
+	elseif basiccomputers.is_power(meta) then
+		local sleep = meta:get_int("sleep") or 0
+		local standby = meta:get_int("standby") or 0
+		if sleep > 0 then
+			if not basiccomputers.get_power(meta, 40) then
+				no_power(pos)
+				return true
+			end
+			meta:set_int("sleep", sleep-1)
+			return true
+		elseif standby > 0 then
+			if not basiccomputers.get_power(meta, 7) then
+				no_power(pos)
+				return true
+			end
+			meta:set_int("standby", standby-1)
+			return true
+		end
+	end
+
+	if old_on_calc then
+		return old_on_calc(pos)
+	end
+end
+
+local old_start = basiccomputers.on_start
+function basiccomputers.on_start(pos, player, start)
+	local meta = minetest.get_meta(pos)
+	meta:set_int("wait", 0)
+	meta:set_int("sleep", 0)
+	meta:set_int("standby", 0)
+end
+
+function basiccomputers.get_power(meta, power)
+	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
+		local energy = meta:get_int("energy")
+		if not energy then
+			return false
+		end
+		if not power then
+			return false
+		end
+		if energy >= power then
+			meta:set_int("energy", energy-power)			
+			return true
+		else
+			local inv = meta:get_inventory()
+			local fuel, afterfuel = minetest.get_craft_result({ method="fuel", with=1, items=inv:get_list("fuel")})
+			if fuel.time > 0 then
+				meta:set_int("energy", fuel.time*200-energy)
+				local stack = inv:get_stack("fuel", 1)
+				stack:take_item()
+				inv:set_stack("fuel",1, stack)
+				return true
+			end
+		end
+	end
+	return false
+		
+end
+
 function basiccomputers.get_upgrade_inv(meta, formspec)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
 		formspec = formspec..
@@ -23,6 +142,8 @@ function basiccomputers.is_upgrade(upgrade)
 	elseif upgrade:get_name() == "basiccomputers:tape_drive" then
 		return true
 	elseif upgrade:get_name() == "basiccomputers:floppy_drive" then
+		return true
+	elseif upgrade:get_name() == "basiccomputers:power" then
 		return true
 	else
 		return false
@@ -514,3 +635,8 @@ minetest.register_chatcommand("example_floppy", {
 		end
 
 end})
+
+minetest.register_craftitem("basiccomputers:power", {
+	description = "Power Upgrade",
+	inventory_image = "default_wood.png",
+})

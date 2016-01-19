@@ -264,16 +264,45 @@ local function computer_calc(pos)
 	a:from_table(state)
 	local term = {}
 	function term.print(text)
-		text = string.sub(text, 1,35)
+		local ptext=""
+		local max_line = 39
+		local nl = text:find("\n")
+		while nl do
+			local seg = string.sub(text, 1, nl-1)
+			while string.len(seg) > max_line do
+				if ptext == "" then
+					ptext=string.sub(seg, 1, max_line).."\n"
+				else
+					ptext=ptext..string.sub(seg, 1, max_line).."\n"
+				end
+				seg = string.sub(seg, max_line+1, -1)
+			end
+			ptext=ptext..seg.."\n"
+			text = string.sub(text, nl+1, -1)
+			nl = text:find("\n")
+		end
+		while string.len(text) > max_line do
+			if ptext == "" then
+				ptext=string.sub(text, 1, max_line).."\n"
+			else
+				ptext=ptext..string.sub(text, 1, max_line).."\n"
+			end
+			text = string.sub(text, max_line+1, -1)
+		end
+		ptext = ptext..text
+		text = ptext
+		ptext = nil
+				
 		local display = meta:get_string("display")
 		display = display..text.."\n"
 		local lines = 0
 		for line in string.gmatch(display, "\n") do
 			lines = lines +1
 		end
-		if lines > 8 then
+		while lines > 8 do
 			local start = display:find("\n")
 			display = display:sub(start+1, -1)
+			lines = lines - 1
 		end
 		meta:set_string("display", display)
 		update_formspec(meta)

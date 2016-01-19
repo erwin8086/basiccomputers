@@ -140,9 +140,10 @@ function vfs:cat(f, print)
 	local line = c:find("\n")
 	if not line then
 		print(c)
+		return
 	end
 	while line do
-		print(string.sub(c, 0, line-1))
+		print(string.sub(c, 1, line-1))
 		c = string.sub(c, line+1, -1)	
 		line = c:find("\n")
 	end

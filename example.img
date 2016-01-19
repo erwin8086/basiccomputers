@@ -1,4 +1,4 @@
-return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["energy"] = "10 PRINT \"ENERGY:\", ENERGY()\
+return {["opens"] = {{["fname"] = "tmp", ["pos"] = 6}, {["pos"] = 5, ["fname"] = "tmp"}}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["energy"] = "10 PRINT \"ENERGY:\", ENERGY()\
 ", ["loops"] = "5 PRINT  \"START\"\
 10 LET \"A\", 0\
 20 DO\
@@ -14,14 +14,6 @@ return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["energy"
 100 LET \"B\", 0\
 110 FOR \"A\",1,8:LET \"B\", B+1:PRINT A, \"*\",B,\"=\",A*B:NEXT\
 120 PRINT \"END\":END\
-", ["fstat"] = "10 PRINT \"STATS\"\
-20 PRINT \"SIZE:\", FSTAT(\"size\"), \" FREE:\", FSTAT(\"free\"), \" USED:\", FSTAT(\"used\")\
-30 PRINT \"READONLY:\", FSTAT(\"readonly\"), \" NOWRITE:\", FSTAT(\"nowrite\")\
-31 LET \"A\", 0\
-32 LET \"A\", A+1\
-33 IF A, \"<\", 2, 32\
-40 CLEAR\
-50 GOTO 10\
 ", ["str"] = "10 STR \"HELLO\"\
 20 PRINT STR()", ["read"] = "10 IF ISREAD(), \"<>\", 1, 10\
 20 STR READ()\
@@ -37,4 +29,49 @@ return {["opens"] = {}, ["size"] = 4096, ["nowrite"] = true, ["fs"] = {["energy"
 19 IF ISREAD(), \"<>\",1,19\
 20 LET \"B\", TONUMBER(READ())\
 30 PRINT \"NUMBER1 + NUMBER2=\", A+B\
+", ["command"] = "10 COMMAND \"help\", \"msg\"\
+20  PRINT \"TYPE <player> <msg>\"\
+30 IF ISREAD(),\"<>\",1,30\
+40 COMMAND \"msg\", READ()\
+50 STR \"time\"\
+60 COMMAND STR()\
+70 PRINT \"END\"\
+", ["fstat"] = "10 PRINT \"STATS\"\
+20 PRINT \"SIZE:\", FSTAT(\"size\"), \" FREE:\", FSTAT(\"free\"), \" USED:\", FSTAT(\"used\")\
+30 PRINT \"READONLY:\", FSTAT(\"readonly\"), \" NOWRITE:\", FSTAT(\"nowrite\")\
+31 LET \"A\", 0\
+32 LET \"A\", A+1\
+33 IF A, \"<\", 2, 32\
+40 CLEAR\
+50 GOTO 10\
+", ["if"] = "10 LET \"A\", RND(0,10)\
+20 LET \"B\", RND(0,10)\
+30 PRINT \"A=\", A, \" B=\",B\
+40 IF A, \">=\", B,60\
+50 PRINT \"A<B\"\
+60 IF A,\"<=\", B, 80\
+70 PRINT \"A>B\"\
+80 IF A,\"==\", B, 100\
+90 PRINT \"A<>B\"\
+100 IF A,\"<>\",B,120\
+110 PRINT \"A==B\"\
+120 PRINT \"END\":END\
+", ["file"] = "10 FOPEN 1, \"tmp\"\
+20 PRINT \"ENTER TEXT, Exit with EOF\"\
+30 IF ISREAD(),\"<>\", 1, 30\
+40 STR READ()\
+50 IF STR(),\"==\", \"EOF\",70\
+60 FWRITE 1, STR():GOTO 20\
+70 CP \"tmp\" , \"tmp2\"\
+80 FOPEN 2, \"tmp\"\
+90 PRINT \"FIRST LINE:\"\
+100 PRINT FREAD(2)\
+105 PRINT \"FULL FILE:\"\
+110 FPRINT \"tmp2\"\
+120 MV \"tmp2\", \"tmp3\"\
+125 PRINT \"FILE LIST:\"\
+130 LS\
+140 RM \"tmp\"\
+150 RM \"tmp3\"\
+160 PRINT \"END\":END\
 "}, ["readonly"] = true}

@@ -84,6 +84,18 @@ function basiccomputers.upgrade_put(pos, stack, player)
 	return old_upgrade_put(pos, stack, player)
 end
 
+local old_upgrade_take = basiccomputers.upgrade_take
+function basiccomputers.upgrade_take(pos, stack, player)
+	if stack:get_name() == "basiccomputers:battery" then
+		local meta = minetest.get_meta(pos)
+		local inv = meta:get_inventory()
+		if not inv:is_empty("fuel") then
+			return 0
+		end
+	end
+	return old_upgrade_take(pos, stack, player)
+end
+
 minetest.register_craftitem("basiccomputers:battery", {
 	description = "Battery Upgrade",
 	inventory_image = "default_wood.png",

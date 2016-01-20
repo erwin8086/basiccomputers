@@ -59,7 +59,7 @@ end
 
 minetest.register_craftitem("basiccomputers:book1", {
 	description = "Basiccomputers Beginers Guide",
-	inventory_image = "default_wood.png",
+	inventory_image = "default_book.png",
 	on_use = function(stack, user, pt)
 		open_book(user, basiccomputers.books.book1)
 	end,

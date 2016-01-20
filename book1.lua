@@ -17,7 +17,7 @@ basiccomputers.books.book1 = {
 		"label[0,1;".. [[ Computers only works with power
 				Power can supplied with an Generator Upgrade(default),
 				an Battery Upgrade(technic) and an LV cable connected(min 500eu peak)
-				For now whe use a Generator Upgrade they craftet:]].."]"..
+				For now whe use a Generator Upgrade, they craftet:]].."]"..
 		basiccomputers.books.craft("generator", 3, 3)..next..prev..
 		"label[0,6;"..[[ Put this Upgrade into an Upgrade slot in Computer
 				and add Fuel in the new slot,
@@ -72,6 +72,98 @@ basiccomputers.books.book1 = {
 				Last but not least there is a example floppy
 				with demo programs click button to get floppy:]
 		button[3,5;5,1;example;Get Example Disk] ]]..next..prev,
+	"size[10,9]"..
+		"label[0,1;".. [[ Now let us read from input use READ()
+				READ() is a function, functions are used for
+				get parameters of commands. Now let use type: EDIT
+				Click ok to run the editor.
+				Now type into editor:
+				10 PRINT READ()
+				20 GOTO 10
+
+				Click save and then type RUN (and click ok).
+				The programs has no output.
+				Let us type HELLO (and click ok).
+				The program outputs HELLO.
+				The function READ returns the input or ""
+				Now stop the program use kill. ] ]]..prev..next,
+	"size[10,9]"..
+		"label[0,1;".. [[ Now let us calc
+				Type EDIT into computer and click ok.
+				Type into editor:
+				10 PRINT 5*5
+				20 PRINT 5+5
+				30 PRINT 5-1
+				40 PRINT 5/2
+				50 PRINT 5*(2+2)
+
+				Click save and then type RUN (and click ok)
+				The computer prints the result. ]].."]"..next..prev,
+	"size[10,9]"..
+		"label[0,1;".. [[ Now let us save integers for later
+				Type EDIT into computer and click ok
+				Type into editor:
+				10 LET "A", 0
+				20 PRINT A
+				30 LET "A", A+1
+				40 GOTO 20
+
+				Click save and type RUN (and click ok)
+				The computer counts from 0  upwards.
+
+				The command LET saves the integer as variable,
+				its read only the first char from variablename,
+				then saves the number in parameter 2 into the variable,
+				its works only with integers.
+				Now click kill to end the program]].."]"..next..prev,
+	"size[10,9]"..
+		"label[0,1;".. [[ Now let us save strings as variable
+				For save of strings a command and a function exist:
+				STR and STR().
+				STR saves the string and
+				STR() gets the string.
+				Now let us type EDIT (and click ok)
+				Type into Editor:
+				10 STR "HELLO"
+				20 PRINT STR()
+
+				Type RUN (and click ok).
+				The program prints HELLO one times.
+				The command STR accepts one parameter,
+				this is the string saved.
+				The function STR() accepts no parameter,
+				it return the string saved by STR.] ]]..prev..next,
+	"size[10,9]"..
+		"label[0,1;".. [[ Now let us check conditions
+				A new Command described: IF
+				IF two one or four parameters.
+				Type EDIT (and click ok)
+				Type into editor:
+				10 LET "A", 0
+				20 PRINT A
+				30 LET "A", A+1
+				40 IF A, "<", 3, 20
+				
+				Type RUN (and click ok)
+				The program prints numbers from 0 to 2.] ]]..next..prev,
+	"size[10,9]"..
+		"label[0,1;"..[[IF parameters:
+				IF with four parameters:
+				first parameter a value to check
+				secount parameter the mode
+				third parameter the secount value
+				fourth parameter the line to jump
+				mode can be:
+					"==" jumps if first value equals secound value
+					"<>" jumps if first value not equals secound value
+					">" jumps if first value greater than secound value
+					"<" jumps if first value smaller than secound value
+					">=" jumps if first value greater or equals to secound value
+					"<=" jumps if first value smaller or equals to secound value
+				In two parameter mode the parameter represents the follow:
+					first parameter is the value
+					secound parameter is the line to jump
+				If first parameter greater zero it jumps] ]]..next..prev,
 
 }
 basiccomputers.books.crafts.computer = {

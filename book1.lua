@@ -164,6 +164,65 @@ basiccomputers.books.book1 = {
 					first parameter is the value
 					secound parameter is the line to jump
 				If first parameter greater zero it jumps] ]]..next..prev,
+	"size[10,9]"..
+		"label[0,1;"..[[ There also loops: FOR and DO
+				The FOR loop:
+				example:
+				10 FOR "A", 0,10
+				20 PRINT A
+				30 NEXT
+				FOR takes three parameters:
+				first the variable name
+				secound the start value
+				third the end value
+				it counts the variable from start to end value
+				on NEXT it runs the code between FOR and NEXT again and
+				counts variable
+
+				The DO loop:
+				example:
+				10 DO
+				20 PRINT "HELLO"
+				30 WHILE 1
+				DO takes no parameters
+				WHILE take one parameter if it is bigger then zero WHILE goes to DO] ]]..next..prev,
+	"size[10,9]"..
+		"label[0,1;"..[[ The TEST() function:
+				example:
+				10 PRINT TEST(0, "==", 0)
+				20 PRINT TEST(1,"==",0)
+				30 PRINT TEST(0, ">", 1)
+				
+				It prints 1, 0, 0.
+				TEST function checks condition similar to the IF function
+				It returns 1 if true and 0 if false
+				can used for IF and WHILE
+
+				The RND() function:
+				example
+				10 PRINT RND()
+				20 PRINT RND(10, 20)
+				It prints two randmon numbers one between 0 and 100,
+				and one between 10 and 20. It takes no or two paramters:
+				first parameter min (default 0)
+				secound parameter max (default 100)
+				It returns a random number between min and max. ] ]]..prev..next,
+	"size[10,9]"..
+		"label[0,1;"..[[ Function CAT():
+				Concatenate more values:
+				example:
+				10 PRINT CAT(0, "==", 0,"+", 1, "-", 1)
+				CAT takes one ore more parameters.
+				Its returns a string based on parameters
+
+				Function TONUMBER():
+				It creates a Number from String, example:
+				10 PRINT TONUMBER("5")*5
+
+				Command CLEAR:
+				It clears the screen.] ]]..prev,
+ 
+
 
 }
 basiccomputers.books.crafts.computer = {

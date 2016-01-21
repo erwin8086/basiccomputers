@@ -51,6 +51,7 @@ basiccomputers.books.inv = minetest.create_detached_inventory("basiccomputers_cr
 basiccomputers.books.crafts = {}
 
 dofile(basiccomputers.path.."/book1.lua")
+dofile(basiccomputers.path.."/book2.lua")
 
 
 for name, list in pairs(basiccomputers.books.crafts) do
@@ -62,5 +63,13 @@ minetest.register_craftitem("basiccomputers:book1", {
 	inventory_image = "default_book.png",
 	on_use = function(stack, user, pt)
 		open_book(user, basiccomputers.books.book1)
+	end,
+})
+
+minetest.register_craftitem("basiccomputers:book2", {
+	description = "Basiccomputers Upgrade Guide",
+	inventory_image = "default_book.png",
+	on_use = function(stack, user, pt)
+		open_book(user, basiccomputers.books.book2)
 	end,
 })

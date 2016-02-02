@@ -1,22 +1,28 @@
 basiccomputers.books = {}
 local reading = {}
 local function open_book(player, book)
-	local name = player:get_player_name()
-	reading[name] = {}
-	reading[name].book = book
-	reading[name].site = 1
-	minetest.show_formspec(name, "basiccomputers:book", book[1])
+	if book then
+		local name = player:get_player_name()
+		reading[name] = {}
+		reading[name].book = book
+		reading[name].site = 1
+		minetest.show_formspec(name, "basiccomputers:book", book[1])
+	end
 end
 
 minetest.register_on_player_receive_fields(function(player, formname, fields)
 	if formname == "basiccomputers:book" then
 		local name = player:get_player_name()
 		if fields.next then
-			reading[name].site = reading[name].site + 1
-			minetest.show_formspec(name, "basiccomputers:book", reading[name].book[reading[name].site])
+			if reading[name].book[reading[name].site+1] then
+				reading[name].site = reading[name].site + 1
+				minetest.show_formspec(name, "basiccomputers:book", reading[name].book[reading[name].site])
+			end
 		elseif fields.prev then
-			reading[name].site = reading[name].site - 1
-			minetest.show_formspec(name, "basiccomputers:book", reading[name].book[reading[name].site])
+			if reading[name].book[reading[name].site-1] then
+				reading[name].site = reading[name].site - 1
+				minetest.show_formspec(name, "basiccomputers:book", reading[name].book[reading[name].site])
+			end
 		elseif fields.example then
 			local inv = player:get_inventory()
 			local stack = ItemStack("basiccomputers:floppy")
@@ -52,7 +58,8 @@ basiccomputers.books.crafts = {}
 
 dofile(basiccomputers.path.."/book1.lua")
 dofile(basiccomputers.path.."/book2.lua")
-
+dofile(basiccomputers.path.."/book3.lua")
+dofile(basiccomputers.path.."/book4.lua")
 
 for name, list in pairs(basiccomputers.books.crafts) do
 	basiccomputers.books.inv:set_list(name, list)
@@ -71,5 +78,20 @@ minetest.register_craftitem("basiccomputers:book2", {
 	inventory_image = "default_book.png",
 	on_use = function(stack, user, pt)
 		open_book(user, basiccomputers.books.book2)
+	end,
+})
+
+minetest.register_craftitem("basiccomputers:book3", {
+	description = "Basiccomputers and Mods",
+	inventory_image = "default_book.png",
+	on_use = function(stack, user, pt)
+		open_book(user, basiccomputers.books.book3)
+	end,
+})
+minetest.register_craftitem("basiccomputers:book4", {
+	description = "Basiccomputers: Commands and Functions",
+	inventory_image = "default_book.png",
+	on_use = function(stack, user, pt)
+		open_book(user, basiccomputers.books.book4)
 	end,
 })

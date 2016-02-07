@@ -7,6 +7,7 @@ basiccomputers.basic = basic
 basiccomputers.vfs = vfs
 basiccomputers.path = path
 basiccomputers.running = {}
+basiccomputers.version = 0.01
 
 function basiccomputers.can_dig(pos, player)
 	return true
@@ -71,7 +72,9 @@ local on_formspec = "size[10,9]"..
 
 
 local function punch_computer(pos, player)
-
+	if basiccomputers.on_punch then
+		basiccomputers.on_punch(pos, player)
+	end
 end
 
 local function computer_dig(pos, player)
@@ -183,6 +186,11 @@ local function update_formspec(meta)
 end
 
 local function reboot_computer(pos, player)
+	if basiccomputers.on_reboot then
+		if basiccomputers.on_reboot(pos, player) then
+			return
+		end
+	end
 	local meta = minetest.get_meta(pos)
 	meta:set_string("state", "{}")
 	meta:set_string("display", "")
@@ -203,6 +211,11 @@ local can_dig = function(pos, player)
 end
 
 local function computer_receive(pos, fields, player)
+	if basiccomputers.on_receive then
+		if basiccomputers.on_receive(pos, fields, player) then
+			return
+		end
+	end
 	if not basiccomputers.can_click(pos, player) then
 		fields.halt=nil
 		fields.kill=nil
@@ -453,7 +466,16 @@ minetest.register_abm({
 	interval = 1.0,
 	chance = 1,
 	action = function(pos, node, aoc, aocw)
-		computer_calc(pos)
+		status, err = pcall(function()
+			computer_calc(pos)
+		end)
+		if not status then
+			stop_computer(pos)
+			minetest.chat_send_all("Basiccomputer has a error. Report to mod author.")
+			minetest.chat_send_all(err)
+			print("--Basiccomputer has a error. Report to mod author.--")
+			print(err)
+		end
 	end,
 })
 
@@ -485,3 +507,5 @@ minetest.register_craftitem("basiccomputers:floppy", {
 })
 
 minetest.register_privilege("basiccomputers_admin", "Admin for basiccomputers")
+
+dofile(path.."/api.lua")

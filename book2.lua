@@ -96,6 +96,10 @@ basiccomputers.books.book2 =
 				Craft: ] ]]..
 		basiccomputers.books.craft("command", 3, 3)..prev..next,
 	"size[10,9]"..
+		"label[0,1;"..[[ The Loader Upgrade
+				Fore the server to keep the computer loaded.
+				Even if no player on the server.] ]]..next..prev,
+	"size[10,9]"..
 		"label[0,1;"..[[ The Disk Block:
 				Operates on Taps and Floppys.
 				Can copy the disk.

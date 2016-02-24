@@ -1,5 +1,9 @@
+--[[
+	Chat Upgrade.
+]]
 local basic = basiccomputers.basic
 
+-- Register Chat Upgrade
 local old_is_upgrade = basiccomputers.is_upgrade
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:chat" then
@@ -9,15 +13,18 @@ function basiccomputers.is_upgrade(upgrade)
 	end
 end
 
+-- Has Computer a chat upgrade
 function basiccomputers.is_chat(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:chat"))
 end
 
+-- The Chat Upgrade
 minetest.register_craftitem("basiccomputers:chat", {
 	description = "Chat Upgrade",
 	inventory_image = "default_wood.png",
 })
 
+-- Send to chat.
 basic.cmds.CHAT = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_chat(meta) then
@@ -35,6 +42,7 @@ basic.cmds.CHAT = function(self, args)
 	end
 end
 
+-- Get last message from chat.
 basic.funcs.GETCHAT = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_chat(meta) then
@@ -45,6 +53,7 @@ basic.funcs.GETCHAT = function(self, args)
 	return ""
 end
 
+-- Is message in buffer.
 basic.funcs.ISCHAT = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_chat(meta) then
@@ -56,6 +65,7 @@ basic.funcs.ISCHAT = function(self, args)
 	return 0
 end
 
+-- Save chat message to computers
 minetest.register_on_chat_message(function(name, message)
 	for id, pos in pairs(basiccomputers.running) do
 		print(pos.x..","..pos.y..","..pos.z)

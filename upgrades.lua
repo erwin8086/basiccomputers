@@ -1,13 +1,21 @@
+--[[
+	The Generator, Tape and floppy upgrades.
+	Basic upgrade routines.
+]]
+
+-- Get energy of burning item
 basic.funcs.ENERGY = function(self, arg)
 	local meta = minetest.get_meta(self.pos)
 	local energy = meta:get_int("energy")
 	return energy or 0
 end
 
+-- Has generator upgrade
 function basiccomputers.is_power(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:power"))
 end
 
+-- Wait command(saves power)
 basic.cmds.WAIT = function(self, arg)
 	local meta = minetest.get_meta(self.pos)
 	local time = arg[1]
@@ -15,6 +23,8 @@ basic.cmds.WAIT = function(self, arg)
 		meta:set_int("wait", time)
 	end
 end
+
+-- Sleep command(saves more power)
 basic.cmds.SLEEP = function(self, arg)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_power(meta) then
@@ -26,6 +36,8 @@ basic.cmds.SLEEP = function(self, arg)
 		self:error("Requires Power Upgrade")
 	end
 end
+
+-- Standby command(saves max power)
 basic.cmds.STANDBY = function(self, arg)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_power(meta) then
@@ -38,6 +50,7 @@ basic.cmds.STANDBY = function(self, arg)
 	end
 end
 
+-- Called when computer runs out of power
 local function no_power(pos)
 	meta:set_int("wait", 0)
 	meta:set_int("sleep", 0)
@@ -45,6 +58,8 @@ local function no_power(pos)
 	basiccomputers.stop_computer(pos)
 end
 
+-- Called when computer calcs.
+-- For wait, sleep and standby
 local old_on_calc = basiccomputers.on_calc
 function basiccomputers.on_calc(pos)
 	local meta = minetest.get_meta(pos)
@@ -81,6 +96,8 @@ function basiccomputers.on_calc(pos)
 	end
 end
 
+-- Called when computer starts
+-- For sleep, wait and standby
 local old_start = basiccomputers.on_start
 function basiccomputers.on_start(pos, player, start)
 	local meta = minetest.get_meta(pos)
@@ -89,6 +106,7 @@ function basiccomputers.on_start(pos, player, start)
 	meta:set_int("standby", 0)
 end
 
+-- Get power for computer
 function basiccomputers.get_power(meta, power)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
 		local energy = meta:get_int("energy")
@@ -117,6 +135,7 @@ function basiccomputers.get_power(meta, power)
 		
 end
 
+-- Get inventory for Upgrades
 function basiccomputers.get_upgrade_inv(meta, formspec)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:generator")) then
 		formspec = formspec..
@@ -136,6 +155,7 @@ function basiccomputers.get_upgrade_inv(meta, formspec)
 	return formspec
 end
 
+-- Is upgrade(item stack) a upgrade?
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:generator" then
 		return true
@@ -150,6 +170,7 @@ function basiccomputers.is_upgrade(upgrade)
 	end
 end
 
+-- Has computer the given(item stack) upgrade
 function basiccomputers.has_upgrade(meta, upgrade)
 	local inv = meta:get_inventory()
 	if inv:contains_item("upgrades", upgrade) then
@@ -159,20 +180,25 @@ function basiccomputers.has_upgrade(meta, upgrade)
 	end
 end
 
+-- Has computer a tape drive
 function basiccomputers.is_tape(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:tape_drive"))
 end
 
+-- Has computer a floppy drive
 function basiccomputers.is_floppy(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:floppy_drive"))
 end
 
+-- Allow only upgrades to put into upgrade slot
 function basiccomputers.upgrade_put(pos, stack, player)
 	if basiccomputers.is_upgrade(stack) then
 		return stack:get_count()
 	end
 	return 0
 end
+
+-- Allow only empty upgrade to removed
 function basiccomputers.upgrade_take(pos, stack, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
@@ -203,6 +229,7 @@ end
 local basic = basiccomputers.basic
 local vfs = basiccomputers.vfs
 
+-- Save program to tape
 basic.cmds.SAVE = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_tape(meta) then
@@ -220,6 +247,7 @@ basic.cmds.SAVE = function(self, args)
 	end
 end
 
+-- Load program from tape
 basic.cmds.LOAD = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_tape(meta) then
@@ -239,6 +267,7 @@ basic.cmds.LOAD = function(self, args)
 	end
 end
 
+-- Load vfs from stack
 local function load_vfs(stack)
 	local v = vfs:new()
 	local saved = minetest.deserialize(stack:get_metadata())
@@ -248,14 +277,15 @@ local function load_vfs(stack)
 end
 basiccomputers.load_vfs=load_vfs
 
+-- Save vfs to stack
 local function save_vfs(stack, v)
 	local save = v:to_table()
 	stack:set_metadata(minetest.serialize(save))
-	print(minetest.serialize(save))
 	return stack
 end
 basiccomputers.save_vfs=save_vfs
 
+-- Close all files if disk removed
 function basiccomputers.disk_remove(stack)
 	if stack:get_name() == "basiccomputers:floppy" then
 		local vfs = load_vfs(stack)
@@ -264,8 +294,7 @@ function basiccomputers.disk_remove(stack)
 	end
 end
 
-
-
+-- Open file
 basic.cmds.FOPEN = function(self, args)
 	local id = args[1]
 	local name = args[2]
@@ -295,6 +324,7 @@ basic.cmds.FOPEN = function(self, args)
 	end
 end
 
+-- Write to opened file
 basic.cmds.FWRITE = function(self, args)
 	local id = args[1]
 	local text = args[2]
@@ -323,6 +353,7 @@ basic.cmds.FWRITE = function(self, args)
 	end
 end
 
+-- Read from opened file
 basic.funcs.FREAD = function(self, args)
 	local id = args[1]
 	if id and type(id) == "number" then
@@ -352,6 +383,7 @@ basic.funcs.FREAD = function(self, args)
 	return 0
 end
 
+-- List files on disk
 basic.cmds.LS = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_floppy(meta) then
@@ -371,6 +403,7 @@ basic.cmds.LS = function(self, args)
 	end
 end
 
+-- Copy file
 basic.cmds.CP = function(self, args)
 	local f1 = args[1]
 	local f2 = args[2]
@@ -395,6 +428,7 @@ basic.cmds.CP = function(self, args)
 	end
 end
 
+-- Rename file
 basic.cmds.MV = function(self, args)
 	local f1 = args[1]
 	local f2 = args[2]
@@ -419,6 +453,7 @@ basic.cmds.MV = function(self, args)
 	end
 end
 
+-- Close file
 basic.cmds.FCLOSE = function(self, args)
 	local id = args[1]
 	if id and type(id) == "number" then
@@ -446,6 +481,7 @@ basic.cmds.FCLOSE = function(self, args)
 	end
 end
 
+-- Print file
 basic.cmds.FPRINT = function(self, args)
 	local fname = args[1]
 	if fname and type(fname) == "string" then
@@ -470,6 +506,7 @@ basic.cmds.FPRINT = function(self, args)
 	end
 end
 
+-- Get state from floppy
 function basic.funcs.FSTAT(self, args)
 	local mode = args[1]
 	if (not mode) or (not type(mode) == "string") then
@@ -508,11 +545,13 @@ function basic.funcs.FSTAT(self, args)
 	return 0
 end
 
+-- The floppy
 minetest.register_craft({
 	recipe = {{"basiccomputers:floppy"}},
 	output = "basiccomputers:floppy",
 })
 
+-- Crafts floppy readonly or readwrite
 minetest.register_on_craft(function(stack, player, old_craft_grid, craft_inv)
 	if stack:get_name() == "basiccomputers:floppy" then
 		for _, old in ipairs(old_craft_grid) do
@@ -529,6 +568,7 @@ minetest.register_on_craft(function(stack, player, old_craft_grid, craft_inv)
 	end
 end)
 
+-- Remove file
 basic.cmds.RM = function(self, args)
 	local f = args[1]
 	if f and type(f) == "string" then
@@ -552,6 +592,7 @@ basic.cmds.RM = function(self, args)
 	end
 end
 
+-- Save program as file
 basic.cmds.FSAVE = function(self, args)
 	local f = args[1]
 	if f and type(f) == "string" then
@@ -575,6 +616,7 @@ basic.cmds.FSAVE = function(self, args)
 	end
 end
 
+-- Load file as program
 basic.cmds.FLOAD = function(self, args)
 	local f = args[1]
 	if f and type(f) == "string" then
@@ -598,6 +640,8 @@ basic.cmds.FLOAD = function(self, args)
 end
 
 -- Sets Disk as Example Disk
+-- Disabled in release
+--[[
 basic.cmds.FEXAMPLE = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.is_floppy(meta) then
@@ -617,7 +661,8 @@ basic.cmds.FEXAMPLE = function(self, args)
 		self:error("No Floppydrive")
 	end
 end
-
+--]]
+-- Get example floppy
 minetest.register_chatcommand("example_floppy", {
 	params = "",
 	description = "Gets a Floppy with example Programms",
@@ -636,6 +681,7 @@ minetest.register_chatcommand("example_floppy", {
 
 end})
 
+-- The power upgrade
 minetest.register_craftitem("basiccomputers:power", {
 	description = "Power Upgrade",
 	inventory_image = "default_wood.png",

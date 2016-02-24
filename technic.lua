@@ -1,4 +1,8 @@
+--[[
+	The technic extension for technic mod
+]]
 local old_get_power = basiccomputers.get_power
+-- Gets power from battery
 local function battery_power(meta, power)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:battery")) then
 		local inv = meta:get_inventory()
@@ -19,8 +23,10 @@ local function battery_power(meta, power)
 			end
 		end
 	end
+	-- Gets power from the old way
 	return old_get_power(meta, power)
 end
+-- Get power from lv network
 function basiccomputers.get_power(meta, power)
 	local demand = meta:get_int("LV_EU_demand")
 	local input = meta:get_int("LV_EU_input")
@@ -54,6 +60,7 @@ function basiccomputers.get_power(meta, power)
 	return battery_power(meta, power)
 end
 
+-- No power when computer is stopped
 local old_on_stop = basiccomputers.on_stop
 function basiccomputers.on_stop(pos, player)
 	local meta = minetest.get_meta(pos)
@@ -62,9 +69,11 @@ function basiccomputers.on_stop(pos, player)
 		return old_on_stop(pos, player)
 	end
 end
+-- Register computer as machine
 technic.register_machine( "LV", "basiccomputers:computer", technic.receiver)
 technic.register_machine( "LV", "basiccomputers:computer_running", technic.receiver)
 
+-- Register the battery upgrade
 local old_is_upgrade = basiccomputers.is_upgrade
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:battery" then
@@ -74,6 +83,7 @@ function basiccomputers.is_upgrade(upgrade)
 end
 
 local old_upgrade_put = basiccomputers.upgrade_put
+-- Allow only battery or generator upgrade. not both.
 function basiccomputers.upgrade_put(pos, stack, player)
 	if stack:get_name() == "basiccomputers:battery" or stack:get_name() == "basiccomputers:generator" then
 		local meta = minetest.get_meta(pos)
@@ -84,6 +94,7 @@ function basiccomputers.upgrade_put(pos, stack, player)
 	return old_upgrade_put(pos, stack, player)
 end
 
+-- Allow battery upgrade only taked if no battery is in slot
 local old_upgrade_take = basiccomputers.upgrade_take
 function basiccomputers.upgrade_take(pos, stack, player)
 	if stack:get_name() == "basiccomputers:battery" then
@@ -96,11 +107,13 @@ function basiccomputers.upgrade_take(pos, stack, player)
 	return old_upgrade_take(pos, stack, player)
 end
 
+-- The battery Upgrade
 minetest.register_craftitem("basiccomputers:battery", {
 	description = "Battery Upgrade",
 	inventory_image = "default_wood.png",
 })
 
+-- The battery slot
 local old_upgrade_inv = basiccomputers.get_upgrade_inv
 function basiccomputers.get_upgrade_inv(meta, formspec)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:battery")) then
@@ -111,6 +124,7 @@ function basiccomputers.get_upgrade_inv(meta, formspec)
 	return old_upgrade_inv(meta, formspec)
 end
 
+-- The energy function works for battery upgrade
 local old_energy = basic.funcs.ENERGY
 function basic.funcs.ENERGY(self, args)
 	local meta = minetest.get_meta(self.pos)

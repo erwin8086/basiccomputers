@@ -1,5 +1,8 @@
+--Buttons
 local prev = "button[0,0;3,1;prev;Preview]"
 local next = "button[6,0;3,1;next;Next]"
+
+--Book1 table
 basiccomputers.books.book1 = {
 	"size[10,9]"..
 		"label[0,1;"..[[ Computer Beginers Guide
@@ -220,22 +223,29 @@ basiccomputers.books.book1 = {
 				10 PRINT TONUMBER("5")*5
 
 				Command CLEAR:
-				It clears the screen.] ]]..prev,
+				It clears the screen.
+				
+				Tipp:
+				Try to place this book in crafting grid] ]]..prev,
  
 
 
 }
+
+--Crafts:
 basiccomputers.books.crafts.computer = {
 	"default:cobble", "default:cobble", "default:cobble",
 	"default:cobble", "default:torch", "default:cobble",
 	"default:cobble", "default:glass", "default:cobble",
 	"basiccomputers:computer" }
+
 basiccomputers.books.crafts.generator = {
 	"default:cobble", "default:coal_lump", "default:cobble",
 	"default:cobble", "default:torch", "default:cobble",
 	"default:cobble", "default:furnace", "default:cobble",
 	"basiccomputers:generator"
 }
+
 basiccomputers.books.crafts.floppy = {
 	"", "default:coal_lump", "",
 	"", "default:paper", "", 

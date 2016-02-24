@@ -1,3 +1,9 @@
+--[[
+	The Command Upgrade.
+	Execs chat commands.
+]]
+
+-- Register the Upgrade
 local old_is_upgrade = basiccomputers.is_upgrade
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:command" then
@@ -6,6 +12,7 @@ function basiccomputers.is_upgrade(upgrade)
 	return old_is_upgrade(upgrade)
 end
 
+-- Sets players name for privs check.
 local old_upgrade_put = basiccomputers.upgrade_put
 function basiccomputers.upgrade_put(pos, stack, player)
 	if stack:get_name() == "basiccomputers:command" then
@@ -15,10 +22,12 @@ function basiccomputers.upgrade_put(pos, stack, player)
 	return old_upgrade_put(pos, stack, player)
 end
 
+-- Has computer the command upgrade
 function basiccomputers.is_command(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:command"))
 end
 
+-- Execs a chat command.
 basic.cmds.COMMAND = function(self, args)
 	local cmd = args[1]
 	local para = args[2]
@@ -51,6 +60,7 @@ basic.cmds.COMMAND = function(self, args)
 	end
 end
 
+-- The Command Upgrade
 minetest.register_craftitem("basiccomputers:command", {
 	description = "Command Upgrade",
 	inventory_image = "default_wood.png",

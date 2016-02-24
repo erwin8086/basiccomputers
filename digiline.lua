@@ -1,3 +1,8 @@
+--[[
+	Digiline Upgrade for mod digilines.
+]]
+
+-- Register the Upgrade
 local old_is_upgrade = basiccomputers.is_upgrade
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:digiline" then
@@ -6,6 +11,7 @@ function basiccomputers.is_upgrade(upgrade)
 	return old_is_upgrade(upgrade)
 end
 
+-- On digiline receive
 local function on_receive(pos, node, channel, msg)
 	local meta = minetest.get_meta(pos)
 	meta:set_string("digi_channel", channel)
@@ -13,6 +19,7 @@ local function on_receive(pos, node, channel, msg)
 end
 local basic = basiccomputers.basic
 
+-- Send to digiline
 function basic.cmds.DIGILINE(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:digiline")) then
@@ -28,6 +35,7 @@ function basic.cmds.DIGILINE(self, args)
 	end
 end
 
+-- Get from digiline
 function basic.funcs.DIGILINE(self, args)
 	local mode = args[1]
 	local meta = minetest.get_meta(self.pos)
@@ -49,6 +57,7 @@ function basic.funcs.DIGILINE(self, args)
 	return 0
 end
 
+-- Is message in buffer
 function basic.funcs.ISDIGILINE(self, args)
 	local meta = minetest.get_meta(self.pos)
 	if basiccomputers.has_upgrade(meta, "basiccomputers:digiline") then
@@ -62,6 +71,7 @@ function basic.funcs.ISDIGILINE(self, args)
 	return 0
 end
 
+-- The digiline Options for the computer
 basiccomputers.digiline =
 {
 	receptor = {},
@@ -71,6 +81,7 @@ basiccomputers.digiline =
 
 }
 
+-- The digiline Upgrade
 minetest.register_craftitem("basiccomputers:digiline", {
 	description = "Digiline Upgrade",
 	inventory_image = "default_wood.png"

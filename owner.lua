@@ -1,3 +1,9 @@
+--[[
+	The Owner Upgrade.
+	Protects computer.
+]]
+
+-- Register the Upgrade
 local old_is_upgrade = basiccomputers.is_upgrade
 function basiccomputers.is_upgrade(upgrade)
 	if upgrade:get_name() == "basiccomputers:owner" then
@@ -6,10 +12,12 @@ function basiccomputers.is_upgrade(upgrade)
 	return old_is_upgrade(upgrade)
 end
 
+-- Check if player is the owner
 function basiccomputers.is_owner(meta)
 	return basiccomputers.has_upgrade(meta, ItemStack("basiccomputers:owner"))
 end
 
+-- Protects the computer
 local old_upgrade_put = basiccomputers.upgrade_put
 function basiccomputers.upgrade_put(pos, stack, player)
 	if stack:get_name() == "basiccomputers:owner" then
@@ -57,6 +65,7 @@ basiccomputers.can_click = function(pos, player)
 	return old_can_click(pos, player)
 end
 
+-- The Upgrade
 minetest.register_craftitem("basiccomputers:owner", {
 	description = "Owner Upgrade",
 	inventory_image = "default_wood.png",

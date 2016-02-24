@@ -1,5 +1,8 @@
+--Buttons:
 local prev = "button[0,0;3,1;prev;Preview]"
 local next = "button[6,0;3,1;next;Next]"
+
+-- Book2 table
 basiccomputers.books.book2 =
 {
 	"size[10,9]"..
@@ -98,7 +101,8 @@ basiccomputers.books.book2 =
 	"size[10,9]"..
 		"label[0,1;"..[[ The Loader Upgrade
 				Fore the server to keep the computer loaded.
-				Even if no player on the server.] ]]..next..prev,
+				Even if no player on the server.] ]]..next..prev..
+		basiccomputers.books.craft("loader", 3, 3),
 	"size[10,9]"..
 		"label[0,1;"..[[ The Disk Block:
 				Operates on Taps and Floppys.
@@ -117,6 +121,7 @@ basiccomputers.books.book2 =
 				
 }
 
+--Crafts:
 basiccomputers.books.crafts.tape = {
 	"default:stick", "default:paper", "default:stick",
 	"", "","",
@@ -158,3 +163,9 @@ basiccomputers.books.crafts.disk_block = {
 	"default:wood", "default:wood", "default:wood",
 	"basiccomputers:disk_block"
 }
+
+basiccomputers.books.crafts.loader = {
+	"default:wood", "", "",
+	"default:wood", "", "",
+	"default:mese_crystal", "default:wood", "",
+	"basiccomputers:loader" }

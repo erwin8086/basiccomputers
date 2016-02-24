@@ -1,5 +1,7 @@
+--Buttons:
 local prev = "button[0,0;3,1;prev;Preview]"
 local next = "button[6,0;3,1;next;Next]"
+--Book4 table
 basiccomputers.books.book4 = {
 	"size[10,9]"..
 		"label[0,1;"..[[ These book contains description

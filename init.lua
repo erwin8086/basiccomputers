@@ -1,7 +1,14 @@
+--[[
+	basiccomputers mod.
+	Made by henry8086.
+]]
+
+-- Load basic and vfs module
 local path = minetest.get_modpath("basiccomputers")
 local basic = assert(loadfile(path.."/luabasic/sandbox.lua"))(path.."/luabasic")
 local vfs = assert(loadfile(path.."/vfs.lua"))()
 
+-- Generate basiccomputers structure
 basiccomputers = {}
 basiccomputers.basic = basic
 basiccomputers.vfs = vfs
@@ -9,6 +16,7 @@ basiccomputers.path = path
 basiccomputers.running = {}
 basiccomputers.version = 0.01
 
+-- allow all interactions
 function basiccomputers.can_dig(pos, player)
 	return true
 end
@@ -26,19 +34,26 @@ function basiccomputers.can_enter(pos, player)
 end
 
 
+-- Load the computers upgrades and modules.
 dofile(path.."/upgrades.lua")
 dofile(path.."/chat.lua")
 dofile(path.."/owner.lua")
 dofile(path.."/command.lua")
 dofile(path.."/loader.lua")
 dofile(path.."/disk_block.lua")
+
+-- Load technic module if technic mod present
 if technic then
 	dofile(path.."/technic.lua")
 end
+
+-- Load digiline module if digiline mod present
 if digiline then
 	dofile(path.."/digiline.lua")
 end
 dofile(path.."/book.lua")	
+
+-- Remember computers are running
 local id = 0
 local function set_running(pos)
 	for id, spos in pairs(basiccomputers.running) do
@@ -50,6 +65,7 @@ local function set_running(pos)
 	id = id + 1
 end
 
+-- Set computer stop
 local function set_stop(pos)
 	for id, spos in pairs(basiccomputers.running) do
 		if pos.x == spos.x and pos.y == spos.y and pos.z == spos.z then
@@ -57,10 +73,14 @@ local function set_stop(pos)
 		end
 	end
 end
+
+-- The basic off formspec
 local off_formspec = "size[10,9]"..
 	"button[7,2;3,3;start;Start]"..
 	"list[current_player;main;0,5;8,4]"..
 	"list[context;upgrades;8,0;2,2]"
+
+-- The basic on formspec
 local on_formspec = "size[10,9]"..
 	"button[7,2;3,1;kill;Kill]"..
 	"button[7,3;3,1;reboot;Reboot]"..
@@ -71,12 +91,14 @@ local on_formspec = "size[10,9]"..
 	"list[context;upgrades;8,0;2,2]"
 
 
+-- Called when computer punched
 local function punch_computer(pos, player)
 	if basiccomputers.on_punch then
 		basiccomputers.on_punch(pos, player)
 	end
 end
 
+-- Checks if computer can dig
 local function computer_dig(pos, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
@@ -87,20 +109,21 @@ local function computer_dig(pos, player)
 end
 
 
-
+-- Get computers on formspec
 local function get_on_formspec(meta)
 	local formspec = on_formspec
 	formspec = basiccomputers.get_upgrade_inv(meta, formspec)
 	return formspec
 end
 
+-- Get computers off formspec
 local function get_off_formspec(meta)
 	local formspec = off_formspec
 	formspec = basiccomputers.get_upgrade_inv(meta, formspec)
 	return formspec
 end
 
-
+-- Checks if input is in buffer
 basic.funcs.ISREAD = function(self, args)
 	local meta = minetest.get_meta(self.pos)
 	local read = meta:get_string("input")
@@ -111,10 +134,12 @@ basic.funcs.ISREAD = function(self, args)
 	end
 end
 
+-- Reads input from buffer
 basic.funcs.READ = function(self, args)
 	return self:read()
 end
 
+-- Saves string
 basic.cmds.STR = function(self, args)
 	local str = args[1]
 	if str then
@@ -122,10 +147,12 @@ basic.cmds.STR = function(self, args)
 	end
 end
 
+-- Access string
 basic.funcs.STR = function(self, args)
 	return 0, self.mem.str or ""
 end
 
+-- Called when computer starts
 local function start_computer(pos, player, start)
 	if basiccomputers.on_start then
 		local exit = basiccomputers.on_start(pos, player, start)
@@ -154,6 +181,7 @@ local function start_computer(pos, player, start)
 end
 basiccomputers.start_computer = start_computer
 
+-- Called when computer stops
 local function stop_computer(pos, player)
 	if basiccomputers.on_stop then
 		local exit = basiccomputers.on_stop(pos, player)
@@ -179,12 +207,14 @@ local function stop_computer(pos, player)
 end
 basiccomputers.stop_computer = stop_computer
 
+-- Update computers formspec
 local function update_formspec(meta)
 	meta:set_string("formspec", get_on_formspec(meta)..
 		"label[0,0;"..minetest.formspec_escape(meta:get_string("display")).."]"..
 		"label["..math.random(0,100)..","..math.random(0,100)..";]")
 end
 
+-- Called when computer reboots
 local function reboot_computer(pos, player)
 	if basiccomputers.on_reboot then
 		if basiccomputers.on_reboot(pos, player) then
@@ -201,6 +231,7 @@ local function reboot_computer(pos, player)
 	update_formspec(meta)
 end
 
+-- Checks if computer can dig
 local can_dig = function(pos, player)
 	local meta = minetest.get_meta(pos)
 	local inv = meta:get_inventory()
@@ -210,6 +241,7 @@ local can_dig = function(pos, player)
 	return basiccomputers.can_dig(pos, player)
 end
 
+-- Called when computer receive fields
 local function computer_receive(pos, fields, player)
 	if basiccomputers.on_receive then
 		if basiccomputers.on_receive(pos, fields, player) then
@@ -249,6 +281,7 @@ local function computer_receive(pos, fields, player)
 	end
 end
 
+-- Opens fullscreen editor on computer
 local function computer_edit(bi, args)
 	local pos = bi.pos
 	local meta = minetest.get_meta(pos)
@@ -262,6 +295,8 @@ end
 basic.cmds.EDIT = computer_edit
 
 
+-- Called when computer calculates
+-- Protected with pcall
 local function computer_calc(pos)
 	if basiccomputers.on_calc then
 		local exit = basiccomputers.on_calc(pos)
@@ -281,6 +316,8 @@ local function computer_calc(pos)
 	local state = minetest.deserialize(meta:get_string("state"))
 	local a = basic:new()
 	a:from_table(state)
+
+	-- Generate terminal interface
 	local term = {}
 	function term.print(text)
 		local ptext=""
@@ -345,6 +382,7 @@ local function computer_calc(pos)
 	a:set_term(term)
 	a.pos = pos
 
+	-- Parse Line
 	if a.cli.running then
 		a.cli.nextLine(a)
 	else
@@ -353,6 +391,7 @@ local function computer_calc(pos)
 	meta:set_string("state", minetest.serialize(a:to_table()))
 end
 
+-- The computer in off state
 minetest.register_node("basiccomputers:computer", {
 	description = "Computer",
 	tiles = { "default_wood.png" },
@@ -415,6 +454,7 @@ minetest.register_node("basiccomputers:computer", {
 	can_dig = computer_dig
 })
 
+-- The Computer in on state
 minetest.register_node("basiccomputers:computer_running", {
 	tiles = { "default_wood.png" },
 	groups = {choppy=2},
@@ -461,6 +501,7 @@ minetest.register_node("basiccomputers:computer_running", {
 	end,
 })
 
+-- Calls the calc rutine for every computer every secound
 minetest.register_abm({
 	nodenames = {"basiccomputers:computer_running"},
 	interval = 1.0,
@@ -479,6 +520,7 @@ minetest.register_abm({
 	end,
 })
 
+-- The basic upgrades
 minetest.register_craftitem("basiccomputers:generator", {
 	description = "Generator Upgrade",
 	inventory_image = "default_wood.png"
@@ -508,4 +550,10 @@ minetest.register_craftitem("basiccomputers:floppy", {
 
 minetest.register_privilege("basiccomputers_admin", "Admin for basiccomputers")
 
+-- Load crafting recepies
+dofile(path.."/craft.lua")
+
+-- Load the api
+-- Only used for sub mods
 dofile(path.."/api.lua")
+
